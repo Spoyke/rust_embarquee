@@ -1,4 +1,6 @@
+use embassy_stm32::Peri;
 use embassy_stm32::gpio::{Input, Level, Output, Pull, Speed};
+use embassy_stm32::peripherals::{PA0, PA1, TIM2};
 
 pub struct BargraphPins {
     pub led0: Output<'static>,
@@ -19,9 +21,17 @@ pub struct GamepadPins {
     pub btn_center: Input<'static>,
 }
 
+pub struct EncoderPins {
+    pub enc_btn: Input<'static>,
+    pub enc_ch1: Peri<'static, PA0>,
+    pub enc_ch2: Peri<'static, PA1>,
+    pub timer: Peri<'static, TIM2>,
+}
+
 pub struct Board {
     pub bargraph_pins: BargraphPins,
     pub gamepad_pins: GamepadPins,
+    pub encoder_pins: EncoderPins,
 }
 
 impl Board {
@@ -45,6 +55,12 @@ impl Board {
                 btn_right: Input::new(p.PC9, Pull::Up),
                 btn_left: Input::new(p.PC6, Pull::Up),
                 btn_center: Input::new(p.PC5, Pull::Up),
+            },
+            encoder_pins: EncoderPins {
+                enc_btn: Input::new(p.PA15, Pull::Up),
+                enc_ch1: p.PA0,
+                enc_ch2: p.PA1,
+                timer: p.TIM2,
             },
         }
     }

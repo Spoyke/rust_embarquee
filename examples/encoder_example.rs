@@ -6,24 +6,12 @@ use embassy_executor::Spawner;
 use embassy_time::Timer;
 use {defmt_rtt as _, panic_probe as _};
 
-use tp_rust_embarquee::bargraph::Bargraph;
 use tp_rust_embarquee::bsp::Board;
 use tp_rust_embarquee::encoder::Encoder;
-use tp_rust_embarquee::gamepad::{Gamepad, GamepadState};
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
     let board = Board::new();
-
-    let mut bargraph = Bargraph::new(board.bargraph_pins);
-    bargraph.set_range(10, 90);
-    bargraph.set_value(90);
-
-    info!("Bargraph allumé");
-
-    let mut gamepad = Gamepad::new(board.gamepad_pins);
-    let mut gamepad_state: GamepadState;
-
     let mut encoder = Encoder::new(board.encoder_pins);
 
     info!("Encoder value : {}", encoder.read_value());
@@ -32,16 +20,11 @@ async fn main(_spawner: Spawner) {
 
     Timer::after_millis(1000).await;
 
+    info!("Encoder value : {}", encoder.read_value());
+    encoder.reset();
+    info!("Encoder value : {}", encoder.read_value());
+
     loop {
-        gamepad_state = gamepad.poll();
-
-        info!("Gamepad state : ");
-        info!("Top      : {}", gamepad_state.top);
-        info!("Bottom   : {}", gamepad_state.bottom);
-        info!("Left     : {}", gamepad_state.left);
-        info!("Right    : {}", gamepad_state.right);
-        info!("Center   : {}", gamepad_state.center);
-
         info!("Encoder button is pressed : {}", encoder.is_pressed());
         info!("Encoder value : {}", encoder.read_value());
 
