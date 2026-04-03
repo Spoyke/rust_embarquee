@@ -21,6 +21,9 @@ impl Bargraph {
         }
     }
 
+    /// Modifie la plage des valeurs possible pour le bargraph
+    /// Plage petite -> moins de précision
+    /// Plage grande -> plus de précision
     pub fn set_range(&mut self, min: i32, max: i32) -> () {
         self.min = min;
         self.max = max;
@@ -37,7 +40,9 @@ impl Bargraph {
         let nb_led_to_activate: i32 =
             ((value - self.min) * self.leds.len() as i32) / (self.max - self.min);
 
-        for (i, led) in self.leds.iter_mut().enumerate() {
+        // On parcourt les leds dans le sens inverse du tableau pour qu'elles
+        // s'allument dans le bon ordre sur la carte
+        for (i, led) in self.leds.iter_mut().rev().enumerate() {
             if i < nb_led_to_activate as usize {
                 led.set_high();
             } else {

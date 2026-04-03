@@ -25,7 +25,13 @@ async fn main(_spawner: Spawner) {
     info!("Encoder value : {}", encoder.read_value());
 
     loop {
-        info!("Encoder button is pressed : {}", encoder.is_pressed());
+        info!(
+            "Encoder button : {}",
+            match encoder.is_pressed() {
+                true => "Pressed",
+                false => "Unpressed",
+            }
+        );
         info!("Encoder value : {}", encoder.read_value());
 
         Timer::after_millis(100).await;

@@ -37,6 +37,7 @@ impl Gamepad {
         }
     }
 
+    /// Renvoie l'état du bouton 'button'
     pub fn is_pressed(&mut self, button: Button) -> bool {
         // Les boutons sont paramétrés comme actif à l'état bas.
         // On regarde donc si leurs états est bas pour savoir s'ils sont
@@ -50,6 +51,7 @@ impl Gamepad {
         }
     }
 
+    /// Renvoie l'état de tous les boutons
     pub fn poll(&mut self) -> GamepadState {
         GamepadState {
             top: self.is_pressed(Button::Top),

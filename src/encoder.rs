@@ -29,19 +29,23 @@ impl Encoder {
         }
     }
 
+    /// Renvoie l'état du bouton de l'encodeur
     pub fn is_pressed(&mut self) -> bool {
         self.btn.is_low()
     }
 
+    /// Renvoie la valeur de l'encodeur
     pub fn read_value(&mut self) -> i16 {
         self.qei.count().wrapping_sub(u16::MIN) as i16
     }
 
+    /// Définit la position (valeur) de l'encodeur
     pub fn set_position(&mut self, position: i32) -> () {
         let tim2 = embassy_stm32::pac::TIM2;
         tim2.cnt().write_value(position as u32);
     }
 
+    /// Reinitialise la valeur du timer
     pub fn reset(&mut self) -> () {
         let tim2 = embassy_stm32::pac::TIM2;
         tim2.cnt().write_value(5_000);

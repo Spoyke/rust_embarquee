@@ -36,13 +36,49 @@ async fn main(_spawner: Spawner) {
         gamepad_state = gamepad.poll();
 
         info!("Gamepad state : ");
-        info!("Top      : {}", gamepad_state.top);
-        info!("Bottom   : {}", gamepad_state.bottom);
-        info!("Left     : {}", gamepad_state.left);
-        info!("Right    : {}", gamepad_state.right);
-        info!("Center   : {}", gamepad_state.center);
+        info!(
+            "Top : {}",
+            match gamepad_state.top {
+                true => "Pressed",
+                false => "Unpressed",
+            }
+        );
+        info!(
+            "Bottom : {}",
+            match gamepad_state.bottom {
+                true => "Pressed",
+                false => "Unpressed",
+            }
+        );
+        info!(
+            "Left : {}",
+            match gamepad_state.left {
+                true => "Pressed",
+                false => "Unpressed",
+            }
+        );
+        info!(
+            "Right : {}",
+            match gamepad_state.right {
+                true => "Pressed",
+                false => "Unpressed",
+            }
+        );
+        info!(
+            "Center : {}",
+            match gamepad_state.center {
+                true => "Pressed",
+                false => "Unpressed",
+            }
+        );
 
-        info!("Encoder button is pressed : {}", encoder.is_pressed());
+        info!(
+            "Encoder button : {}",
+            match encoder.is_pressed() {
+                true => "Pressed",
+                false => "Unpressed",
+            }
+        );
         info!("Encoder value : {}", encoder.read_value());
 
         Timer::after_millis(100).await;
