@@ -1,4 +1,4 @@
-use embassy_stm32::gpio::{Level, Output, Speed};
+use embassy_stm32::gpio::{Input, Level, Output, Pull, Speed};
 
 pub struct BargraphPins {
     pub led0: Output<'static>,
@@ -11,8 +11,17 @@ pub struct BargraphPins {
     pub led7: Output<'static>,
 }
 
+pub struct GamepadPins {
+    pub btn_top: Input<'static>,
+    pub btn_bottom: Input<'static>,
+    pub btn_right: Input<'static>,
+    pub btn_left: Input<'static>,
+    pub btn_center: Input<'static>,
+}
+
 pub struct Board {
     pub bargraph_pins: BargraphPins,
+    pub gamepad_pins: GamepadPins,
 }
 
 impl Board {
@@ -29,6 +38,13 @@ impl Board {
                 led5: Output::new(p.PB4, Level::Low, Speed::Low),
                 led6: Output::new(p.PB14, Level::Low, Speed::Low),
                 led7: Output::new(p.PB5, Level::Low, Speed::Low),
+            },
+            gamepad_pins: GamepadPins {
+                btn_top: Input::new(p.PC8, Pull::Up),
+                btn_bottom: Input::new(p.PB11, Pull::Up),
+                btn_right: Input::new(p.PC9, Pull::Up),
+                btn_left: Input::new(p.PC6, Pull::Up),
+                btn_center: Input::new(p.PC5, Pull::Up),
             },
         }
     }
