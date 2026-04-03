@@ -6,19 +6,12 @@ use embassy_executor::Spawner;
 use embassy_time::Timer;
 use {defmt_rtt as _, panic_probe as _};
 
-use tp_rust_embarquee::bargraph::Bargraph;
 use tp_rust_embarquee::bsp::Board;
 use tp_rust_embarquee::gamepad::{Gamepad, GamepadState};
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
     let board = Board::new();
-
-    let mut bargraph = Bargraph::new(board.bargraph_pins);
-    bargraph.set_range(10, 90);
-    bargraph.set_value(90);
-
-    info!("Bargraph allumé");
 
     let mut gamepad = Gamepad::new(board.gamepad_pins);
     let mut gamepad_state: GamepadState;
