@@ -1,10 +1,20 @@
 use crate::bsp::StepperPins;
 
+use cortex_m::prelude::_embedded_hal_Pwm;
 use embassy_stm32::gpio::Output;
 use embassy_stm32::gpio::OutputType;
 use embassy_stm32::peripherals::TIM3;
 use embassy_stm32::time::hz;
+use embassy_stm32::timer::Channel;
 use embassy_stm32::timer::simple_pwm::{PwmPin, SimplePwm};
+
+use core::sync::atomic::{AtomicU32, Ordering};
+use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::signal::Signal;
+
+static STEPPER_DIRECTION: AtomicU32 = AtomicU32::new(0);
+static STEPPER_SPEED: AtomicU32 = AtomicU32::new(0);
+static STEPPER_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 
 pub enum MicrosteppingMode {
     Full,    // MS1=Low,  MS2=Low  → 1   pas par step
@@ -13,9 +23,10 @@ pub enum MicrosteppingMode {
     Eighth,  // MS1=High, MS2=High → 1/8 pas par step
 }
 
+#[repr(u32)]
 pub enum Direction {
-    Clockwise,
-    CounterClockwise,
+    Clockwise = 0,
+    CounterClockwise = 1,
 }
 
 pub struct Stepper {
@@ -23,7 +34,7 @@ pub struct Stepper {
     ms1: Output<'static>,
     ms2: Output<'static>,
     enn: Output<'static>,
-    pwm: SimplePwm<'static, TIM3>,
+    pub pwm: SimplePwm<'static, TIM3>,
 }
 
 impl Stepper {
@@ -68,6 +79,11 @@ impl Stepper {
             Direction::CounterClockwise => self.dir.set_low(),
         }
 
+        if speed == 0 {
+            self.pwm.ch1().disable();
+            return;
+        }
+
         self.pwm.set_frequency(hz(speed));
 
         let max_duty = self.pwm.max_duty_cycle();
@@ -96,5 +112,29 @@ impl Stepper {
                 self.ms2.set_high();
             }
         }
+    }
+
+    pub fn update_speed(speed: u32, direction: Direction) {
+        STEPPER_SPEED.store(speed, Ordering::Relaxed);
+        STEPPER_DIRECTION.store(direction as u32, Ordering::Relaxed);
+        STEPPER_SIGNAL.signal(());
+    }
+
+    pub async fn wait_and_update(&mut self) {
+        STEPPER_SIGNAL.wait().await;
+        self.disable();
+
+        let direction = match STEPPER_DIRECTION.load(Ordering::Relaxed) {
+            1 => Direction::CounterClockwise,
+            _ => Direction::Clockwise,
+        };
+
+        let speed = STEPPER_SPEED.load(Ordering::Relaxed);
+
+        self.set_speed(speed, direction);
+
+        self.enable();
+
+        STEPPER_SIGNAL.reset();
     }
 }
