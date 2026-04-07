@@ -1,6 +1,12 @@
 use crate::bsp::BargraphPins;
+use core::sync::atomic::{AtomicU32, Ordering};
+use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 
 use embassy_stm32::gpio::Output;
+
+use embassy_sync::signal::Signal;
+static BARGRAPH_LEVEL: AtomicU32 = AtomicU32::new(0);
+static BARGRAPH_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 
 pub struct Bargraph {
     leds: [Output<'static>; 8],
@@ -49,5 +55,17 @@ impl Bargraph {
                 led.set_low();
             }
         }
+    }
+
+    pub fn update_value(new_value: u32) {
+        BARGRAPH_LEVEL.store(new_value, Ordering::Relaxed);
+        BARGRAPH_SIGNAL.signal(());
+    }
+
+    pub async fn wait_and_update(&mut self) -> () {
+        BARGRAPH_SIGNAL.wait().await;
+        let value = BARGRAPH_LEVEL.load(Ordering::Relaxed);
+        self.set_value(value as i32);
+        BARGRAPH_SIGNAL.reset();
     }
 }
