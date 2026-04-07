@@ -10,10 +10,16 @@ use tp_rust_embarquee::bargraph::Bargraph;
 use tp_rust_embarquee::bsp::Board;
 use tp_rust_embarquee::encoder::Encoder;
 use tp_rust_embarquee::gamepad::{Gamepad, GamepadState};
+use tp_rust_embarquee::stepper::{Direction, MicrosteppingMode, Stepper};
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
     let board = Board::new();
+
+    let mut stepper = Stepper::new(board.stepper_pins);
+    stepper.set_microstepping(MicrosteppingMode::Eighth);
+    stepper.set_speed(200, Direction::Clockwise);
+    stepper.enable();
 
     let mut bargraph = Bargraph::new(board.bargraph_pins);
     bargraph.set_range(10, 90);
